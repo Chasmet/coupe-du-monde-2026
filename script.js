@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'cdm2026-v1';
+const STORAGE_KEY = 'cdm2026-v2';
 
 const FLAGS = {
   'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿','Canada':'🇨🇦','Bosnie':'🇧🇦','Qatar':'🇶🇦','Suisse':'🇨🇭','Brésil':'🇧🇷','Maroc':'🇲🇦','Haïti':'🇭🇹','Écosse':'🏴','États-Unis':'🇺🇸','Paraguay':'🇵🇾','Australie':'🇦🇺','Turquie':'🇹🇷','Allemagne':'🇩🇪','Curaçao':'🇨🇼','Côte d’Ivoire':'🇨🇮','Équateur':'🇪🇨','Pays-Bas':'🇳🇱','Japon':'🇯🇵','Suède':'🇸🇪','Tunisie':'🇹🇳','Belgique':'🇧🇪','Égypte':'🇪🇬','Iran':'🇮🇷','Nouvelle-Zélande':'🇳🇿','Espagne':'🇪🇸','Cap Vert':'🇨🇻','Arabie Saoudite':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Sénégal':'🇸🇳','Irak':'🇮🇶','Norvège':'🇳🇴','Argentine':'🇦🇷','Algérie':'🇩🇿','Autriche':'🇦🇹','Jordanie':'🇯🇴','Portugal':'🇵🇹','RD Congo':'🇨🇩','Ouzbékistan':'🇺🇿','Colombie':'🇨🇴','Angleterre':'🏴','Croatie':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦'
@@ -21,6 +21,7 @@ const GROUPS = [
 
 const roundLabels = {R32:'Seizièmes de finale',R16:'Huitièmes de finale',QF:'Quarts de finale',SF:'Demi-finales',FINAL:'Finale',THIRD:'3e place'};
 let activeTab = 'groups';
+let activeGroup = 'A';
 let state = loadState() || freshState();
 
 function flag(team){return FLAGS[team] || '🏳️'}
@@ -37,13 +38,12 @@ function makeMatches(teams){
   }
   return matches;
 }
-
 function freshState(){
   return {groups: GROUPS.map(g => ({name:g.name,teams:[...g.teams],matches:makeMatches(g.teams)})), knockout: [], currentRound:null, champion:null, third:null};
 }
 function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateDashboard();}
 function loadState(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;}}
-function reset(){localStorage.removeItem(STORAGE_KEY); state = freshState(); activeTab='groups'; render();}
+function reset(){localStorage.removeItem(STORAGE_KEY); state = freshState(); activeTab='groups'; activeGroup='A'; render();}
 
 function standings(group){
   const stats = Object.fromEntries(group.teams.map(t => [t,{team:t,j:0,g:0,d:0,p:0,bp:0,bc:0,diff:0,pts:0}]));
@@ -81,12 +81,13 @@ function updateDashboard(){
 }
 
 function renderGroups(){
-  document.getElementById('groupsView').innerHTML = `<div class="groups-grid">${state.groups.map(g=>{
-    const table = standings(g).map((s,i)=>`<tr class="${i<2?'qual-row':''}"><td>${teamHtml(s.team)}</td><td>${s.j}</td><td>${s.g}</td><td>${s.d}</td><td>${s.p}</td><td>${s.bp}</td><td>${s.bc}</td><td>${s.diff}</td><td><strong>${s.pts}</strong></td></tr>`).join('');
-    const done = g.matches.every(m=>m.scoreA!==null && m.scoreB!==null);
-    const matches = g.matches.map((m,i)=>`<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${m.scoreA!==null&&m.scoreB!==null?'OK':'À saisir'}</span></div><div class="match-grid"><div class="team-name">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-group="${g.name}" data-match="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-group="${g.name}" data-match="${m.id}" data-field="scoreB"></div><div class="team-name right">${teamHtml(m.teamB)}</div></div></div>`).join('');
-    return `<article class="card"><div class="card-head"><div class="card-title">Groupe ${g.name}</div><span class="badge ${done?'':'warn'}">${done?'Terminé':'En cours'}</span></div><div class="card-body"><div class="table-wrap"><table><thead><tr><th>Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>${table}</tbody></table></div><div class="matches">${matches}</div></div></article>`;
-  }).join('')}</div>`;
+  const group = state.groups.find(g => g.name === activeGroup) || state.groups[0];
+  const groupTabs = `<div class="group-switch">${state.groups.map(g=>`<button class="group-pill ${g.name===group.name?'active':''}" data-group-tab="${g.name}">${g.name}</button>`).join('')}</div>`;
+  const table = standings(group).map((s,i)=>`<tr class="${i<2?'qual-row':''}"><td>${teamHtml(s.team)}</td><td>${s.j}</td><td>${s.g}</td><td>${s.d}</td><td class="hide-mobile">${s.p}</td><td class="hide-mobile">${s.bp}</td><td class="hide-mobile">${s.bc}</td><td>${s.diff}</td><td><strong>${s.pts}</strong></td></tr>`).join('');
+  const done = group.matches.every(m=>m.scoreA!==null && m.scoreB!==null);
+  const matches = group.matches.map((m,i)=>`<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${m.scoreA!==null&&m.scoreB!==null?'OK':'À saisir'}</span></div><div class="match-compact"><div class="team-line">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreB"></div><div class="team-line right">${teamHtml(m.teamB)}</div></div></div>`).join('');
+  document.getElementById('groupsView').innerHTML = `${groupTabs}<article class="card"><div class="card-head"><div class="card-title">Groupe ${group.name}</div><span class="badge ${done?'':'warn'}">${done?'Terminé':'En cours'}</span></div><div class="card-body"><div class="table-wrap"><table><thead><tr><th>Équipe</th><th>J</th><th>G</th><th>N</th><th class="hide-mobile">P</th><th class="hide-mobile">BP</th><th class="hide-mobile">BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>${table}</tbody></table></div><div class="matches">${matches}</div></div></article>`;
+  document.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click', e=>{activeGroup=e.currentTarget.dataset.groupTab; renderGroups();}));
   document.querySelectorAll('.score[data-group]').forEach(input=>input.addEventListener('input', e=>{
     const g = state.groups.find(x=>x.name===e.target.dataset.group);
     const m = g.matches.find(x=>x.id===e.target.dataset.match);
@@ -134,7 +135,7 @@ function renderKnockout(){
   const cur = currentMatches();
   document.getElementById('knockoutView').innerHTML = `<article class="card wide-card"><h2 class="section-title">${roundLabels[state.currentRound]}</h2><div class="matches">${cur.map((m,i)=>{
     const w = winner(m); const draw = m.scoreA!==null && m.scoreB!==null && m.scoreA===m.scoreB; const needPens = draw && m.etA!==null && m.etB!==null && m.etA===m.etB;
-    return `<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${w?'Qualifié':'En jeu'}</span></div><div class="match-grid"><div class="team-name">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-k="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-k="${m.id}" data-field="scoreB"></div><div class="team-name right">${teamHtml(m.teamB)}</div></div>${draw?`<div class="match-top" style="margin-top:12px"><span>Prolongation</span></div><div class="scores" style="justify-content:center"><input class="score" type="number" min="0" value="${m.etA ?? ''}" data-k="${m.id}" data-field="etA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.etB ?? ''}" data-k="${m.id}" data-field="etB"></div>`:''}${needPens?`<div class="scores" style="justify-content:center;margin-top:12px"><button class="btn ghost" data-pens="A" data-k="${m.id}">${m.teamA}</button><button class="btn ghost" data-pens="B" data-k="${m.id}">${m.teamB}</button></div>`:''}${w?`<div class="winner">Vainqueur : ${teamHtml(w)}</div>`:''}</div>`}).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="advanceBtn" ${cur.every(winner)?'':'disabled'}>Tour suivant</button></article>`;
+    return `<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${w?'Qualifié':'En jeu'}</span></div><div class="match-compact"><div class="team-line">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-k="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-k="${m.id}" data-field="scoreB"></div><div class="team-line right">${teamHtml(m.teamB)}</div></div>${draw?`<div class="match-top" style="margin-top:12px"><span>Prolongation</span></div><div class="scores"><input class="score" type="number" min="0" value="${m.etA ?? ''}" data-k="${m.id}" data-field="etA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.etB ?? ''}" data-k="${m.id}" data-field="etB"></div>`:''}${needPens?`<div class="scores" style="margin-top:12px"><button class="btn ghost" data-pens="A" data-k="${m.id}">${m.teamA}</button><button class="btn ghost" data-pens="B" data-k="${m.id}">${m.teamB}</button></div>`:''}${w?`<div class="winner">Vainqueur : ${teamHtml(w)}</div>`:''}</div>`}).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="advanceBtn" ${cur.every(winner)?'':'disabled'}>Tour suivant</button></article>`;
   document.querySelectorAll('[data-k][data-field]').forEach(input=>input.addEventListener('input', e=>{const m=state.knockout.find(x=>x.id===e.target.dataset.k); m[e.target.dataset.field]=n(e.target.value); if((e.target.dataset.field==='scoreA'||e.target.dataset.field==='scoreB') && m.scoreA!==m.scoreB){m.etA=null;m.etB=null;m.pens=null;} save(); renderKnockout(); renderChampion();}));
   document.querySelectorAll('[data-pens]').forEach(btn=>btn.addEventListener('click', e=>{const m=state.knockout.find(x=>x.id===e.target.dataset.k); m.pens=e.target.dataset.pens; save(); renderKnockout(); renderChampion();}));
   const adv = document.getElementById('advanceBtn'); if(adv) adv.addEventListener('click', advance);
