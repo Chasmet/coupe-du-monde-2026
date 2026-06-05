@@ -1,0 +1,19 @@
+{
+  "name": "Coupe du Monde 2026",
+  "short_name": "CDM 2026",
+  "description": "Simulateur mobile Coupe du Monde 2026",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08111f",
+  "theme_color": "#08111f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
