@@ -1,4 +1,5 @@
-const STORAGE_KEY = 'cdm2026-v2';
+const STORAGE_KEY = 'cdm2026-officiel-21juin-v1';
+const DATA_LABEL = 'Résultats au 21 juin • 36 matchs terminés';
 
 const FLAGS = {
   'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿','Canada':'🇨🇦','Bosnie':'🇧🇦','Qatar':'🇶🇦','Suisse':'🇨🇭','Brésil':'🇧🇷','Maroc':'🇲🇦','Haïti':'🇭🇹','Écosse':'🏴','États-Unis':'🇺🇸','Paraguay':'🇵🇾','Australie':'🇦🇺','Turquie':'🇹🇷','Allemagne':'🇩🇪','Curaçao':'🇨🇼','Côte d’Ivoire':'🇨🇮','Équateur':'🇪🇨','Pays-Bas':'🇳🇱','Japon':'🇯🇵','Suède':'🇸🇪','Tunisie':'🇹🇳','Belgique':'🇧🇪','Égypte':'🇪🇬','Iran':'🇮🇷','Nouvelle-Zélande':'🇳🇿','Espagne':'🇪🇸','Cap Vert':'🇨🇻','Arabie Saoudite':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Sénégal':'🇸🇳','Irak':'🇮🇶','Norvège':'🇳🇴','Argentine':'🇦🇷','Algérie':'🇩🇿','Autriche':'🇦🇹','Jordanie':'🇯🇴','Portugal':'🇵🇹','RD Congo':'🇨🇩','Ouzbékistan':'🇺🇿','Colombie':'🇨🇴','Angleterre':'🏴','Croatie':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦'
@@ -17,6 +18,45 @@ const GROUPS = [
   {name:'J',teams:['Argentine','Algérie','Autriche','Jordanie']},
   {name:'K',teams:['Portugal','RD Congo','Ouzbékistan','Colombie']},
   {name:'L',teams:['Angleterre','Croatie','Ghana','Panama']}
+];
+
+const OFFICIAL_RESULTS = [
+  ['A','Mexique',2,0,'Afrique du Sud'],
+  ['A','Corée du Sud',2,1,'Tchéquie'],
+  ['A','Tchéquie',1,1,'Afrique du Sud'],
+  ['A','Mexique',1,0,'Corée du Sud'],
+  ['B','Canada',1,1,'Bosnie'],
+  ['B','Qatar',1,1,'Suisse'],
+  ['B','Suisse',4,1,'Bosnie'],
+  ['B','Canada',6,0,'Qatar'],
+  ['C','Brésil',1,1,'Maroc'],
+  ['C','Haïti',0,1,'Écosse'],
+  ['C','Écosse',0,1,'Maroc'],
+  ['C','Brésil',3,0,'Haïti'],
+  ['D','États-Unis',4,1,'Paraguay'],
+  ['D','Australie',2,0,'Turquie'],
+  ['D','États-Unis',2,0,'Australie'],
+  ['D','Turquie',0,1,'Paraguay'],
+  ['E','Allemagne',7,1,'Curaçao'],
+  ['E','Côte d’Ivoire',1,0,'Équateur'],
+  ['E','Allemagne',2,1,'Côte d’Ivoire'],
+  ['E','Équateur',0,0,'Curaçao'],
+  ['F','Pays-Bas',2,2,'Japon'],
+  ['F','Suède',5,1,'Tunisie'],
+  ['F','Pays-Bas',5,1,'Suède'],
+  ['F','Tunisie',0,4,'Japon'],
+  ['G','Belgique',1,1,'Égypte'],
+  ['G','Iran',2,2,'Nouvelle-Zélande'],
+  ['H','Espagne',0,0,'Cap Vert'],
+  ['H','Arabie Saoudite',1,1,'Uruguay'],
+  ['I','France',3,1,'Sénégal'],
+  ['I','Irak',1,4,'Norvège'],
+  ['J','Argentine',3,0,'Algérie'],
+  ['J','Autriche',3,1,'Jordanie'],
+  ['K','Portugal',1,1,'RD Congo'],
+  ['K','Ouzbékistan',1,3,'Colombie'],
+  ['L','Angleterre',4,2,'Croatie'],
+  ['L','Ghana',1,0,'Panama']
 ];
 
 const roundLabels = {R32:'Seizièmes de finale',R16:'Huitièmes de finale',QF:'Quarts de finale',SF:'Demi-finales',FINAL:'Finale',THIRD:'3e place'};
@@ -38,12 +78,33 @@ function makeMatches(teams){
   }
   return matches;
 }
+
 function freshState(){
-  return {groups: GROUPS.map(g => ({name:g.name,teams:[...g.teams],matches:makeMatches(g.teams)})), knockout: [], currentRound:null, champion:null, third:null};
+  const base = {groups: GROUPS.map(g => ({name:g.name,teams:[...g.teams],matches:makeMatches(g.teams)})), knockout: [], currentRound:null, champion:null, third:null, dataLabel: DATA_LABEL};
+  applyOfficialResults(base);
+  return base;
 }
+
+function applyOfficialResults(targetState){
+  OFFICIAL_RESULTS.forEach(([groupName, teamA, scoreA, scoreB, teamB]) => {
+    const group = targetState.groups.find(g => g.name === groupName);
+    if(!group) return;
+    const match = group.matches.find(m => (m.teamA === teamA && m.teamB === teamB) || (m.teamA === teamB && m.teamB === teamA));
+    if(!match) return;
+    if(match.teamA === teamA){match.scoreA = scoreA; match.scoreB = scoreB;}
+    else {match.scoreA = scoreB; match.scoreB = scoreA;}
+  });
+}
+
 function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateDashboard();}
-function loadState(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;}}
-function reset(){localStorage.removeItem(STORAGE_KEY); state = freshState(); activeTab='groups'; activeGroup='A'; render();}
+function loadState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(saved && saved.groups && saved.groups.length === 12) return saved;
+  }catch{}
+  return null;
+}
+function reset(){localStorage.removeItem(STORAGE_KEY); state = freshState(); activeTab='groups'; activeGroup='A'; save(); render();}
 
 function standings(group){
   const stats = Object.fromEntries(group.teams.map(t => [t,{team:t,j:0,g:0,d:0,p:0,bp:0,bc:0,diff:0,pts:0}]));
@@ -68,10 +129,11 @@ function qualified(){
   return [...rows.filter(r=>r.pos<=2), ...bestThirds].map(x=>x.team);
 }
 function allGroupsDone(){return state.groups.every(g=>g.matches.every(m=>m.scoreA!==null && m.scoreB!==null));}
+function groupPlayed(group){return group.matches.filter(m=>m.scoreA!==null && m.scoreB!==null).length;}
 
 function updateDashboard(){
   const total = state.groups.reduce((s,g)=>s+g.matches.length,0);
-  const played = state.groups.reduce((s,g)=>s+g.matches.filter(m=>m.scoreA!==null && m.scoreB!==null).length,0);
+  const played = state.groups.reduce((s,g)=>s+groupPlayed(g),0);
   const done = state.groups.filter(g=>g.matches.every(m=>m.scoreA!==null && m.scoreB!==null)).length;
   const pct = total ? Math.round(played/total*100) : 0;
   document.getElementById('progressText').textContent = pct + '%';
@@ -82,11 +144,11 @@ function updateDashboard(){
 
 function renderGroups(){
   const group = state.groups.find(g => g.name === activeGroup) || state.groups[0];
-  const groupTabs = `<div class="group-switch">${state.groups.map(g=>`<button class="group-pill ${g.name===group.name?'active':''}" data-group-tab="${g.name}">${g.name}</button>`).join('')}</div>`;
+  const groupTabs = `<div class="data-note">${DATA_LABEL}</div><div class="group-switch">${state.groups.map(g=>`<button class="group-pill ${g.name===group.name?'active':''}" data-group-tab="${g.name}"><span>${g.name}</span><small>${groupPlayed(g)}/6</small></button>`).join('')}</div>`;
   const table = standings(group).map((s,i)=>`<tr class="${i<2?'qual-row':''}"><td>${teamHtml(s.team)}</td><td>${s.j}</td><td>${s.g}</td><td>${s.d}</td><td class="hide-mobile">${s.p}</td><td class="hide-mobile">${s.bp}</td><td class="hide-mobile">${s.bc}</td><td>${s.diff}</td><td><strong>${s.pts}</strong></td></tr>`).join('');
   const done = group.matches.every(m=>m.scoreA!==null && m.scoreB!==null);
-  const matches = group.matches.map((m,i)=>`<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${m.scoreA!==null&&m.scoreB!==null?'OK':'À saisir'}</span></div><div class="match-compact"><div class="team-line">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreB"></div><div class="team-line right">${teamHtml(m.teamB)}</div></div></div>`).join('');
-  document.getElementById('groupsView').innerHTML = `${groupTabs}<article class="card"><div class="card-head"><div class="card-title">Groupe ${group.name}</div><span class="badge ${done?'':'warn'}">${done?'Terminé':'En cours'}</span></div><div class="card-body"><div class="table-wrap"><table><thead><tr><th>Équipe</th><th>J</th><th>G</th><th>N</th><th class="hide-mobile">P</th><th class="hide-mobile">BP</th><th class="hide-mobile">BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>${table}</tbody></table></div><div class="matches">${matches}</div></div></article>`;
+  const matches = group.matches.map((m,i)=>`<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${m.scoreA!==null&&m.scoreB!==null?`${m.scoreA}-${m.scoreB}`:'À saisir'}</span></div><div class="match-compact"><div class="team-line">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreB"></div><div class="team-line right">${teamHtml(m.teamB)}</div></div></div>`).join('');
+  document.getElementById('groupsView').innerHTML = `${groupTabs}<article class="card"><div class="card-head"><div class="card-title">Groupe ${group.name} • ${groupPlayed(group)}/6 matchs</div><span class="badge ${done?'':'warn'}">${done?'Terminé':'En cours'}</span></div><div class="card-body"><div class="table-wrap"><table><thead><tr><th>Équipe</th><th>J</th><th>G</th><th>N</th><th class="hide-mobile">P</th><th class="hide-mobile">BP</th><th class="hide-mobile">BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>${table}</tbody></table></div><div class="matches">${matches}</div></div></article>`;
   document.querySelectorAll('[data-group-tab]').forEach(btn=>btn.addEventListener('click', e=>{activeGroup=e.currentTarget.dataset.groupTab; renderGroups();}));
   document.querySelectorAll('.score[data-group]').forEach(input=>input.addEventListener('input', e=>{
     const g = state.groups.find(x=>x.name===e.target.dataset.group);
@@ -98,8 +160,10 @@ function renderGroups(){
 
 function renderQualified(){
   const {rows,bestThirds}=allStandings();
-  const q = [...rows.filter(r=>r.pos<=2), ...bestThirds];
-  document.getElementById('qualifiedView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Qualifiés ${q.length}/32</h2><p class="subtitle">Les 2 premiers de chaque groupe + les 8 meilleurs troisièmes.</p><div class="list">${q.map((x,i)=>`<div class="item"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pos}e</small></div>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale':'Termine tous les matchs'}</button></article>`;
+  const firsts = rows.filter(r=>r.pos===1);
+  const seconds = rows.filter(r=>r.pos===2);
+  const q = [...firsts, ...seconds, ...bestThirds];
+  document.getElementById('qualifiedView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Qualifiés provisoires ${q.length}/32</h2><p class="subtitle">Classement calculé avec les 36 résultats saisis au 21 juin.</p><div class="list">${q.map((x,i)=>`<div class="item"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pos}e • ${x.pts} pts</small></div>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale':'Phase finale disponible quand les 72 matchs seront saisis'}</button></article>`;
   const btn = document.getElementById('generateBtn'); if(btn) btn.addEventListener('click', generateKnockout);
 }
 
@@ -131,7 +195,7 @@ function advance(){
   state.currentRound = nr; save(); renderKnockout();
 }
 function renderKnockout(){
-  if(!state.currentRound){document.getElementById('knockoutView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Phase finale</h2><p class="subtitle">Termine les groupes puis génère la phase finale.</p></article>`; return;}
+  if(!state.currentRound){document.getElementById('knockoutView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Phase finale</h2><p class="subtitle">La phase finale sera générée quand les 72 matchs de groupes seront saisis.</p></article>`; return;}
   const cur = currentMatches();
   document.getElementById('knockoutView').innerHTML = `<article class="card wide-card"><h2 class="section-title">${roundLabels[state.currentRound]}</h2><div class="matches">${cur.map((m,i)=>{
     const w = winner(m); const draw = m.scoreA!==null && m.scoreB!==null && m.scoreA===m.scoreB; const needPens = draw && m.etA!==null && m.etB!==null && m.etA===m.etB;
@@ -156,4 +220,5 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{act
 document.getElementById('resetBtn').addEventListener('click', reset);
 document.getElementById('newTournamentBtn').addEventListener('click', reset);
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
+save();
 render();
