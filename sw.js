@@ -1,5 +1,5 @@
-const CACHE_NAME = 'cdm2026-cache-v5-23juin';
-const ASSETS = ['./','index.html','style.css?v=5','script.js?v=5','manifest.json?v=5','icon.svg?v=5'];
+const CACHE_NAME = 'cdm2026-cache-v6-24juin';
+const ASSETS = ['./','index.html','style.css?v=6','script.js?v=6','manifest.json?v=6','icon.svg?v=6'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
