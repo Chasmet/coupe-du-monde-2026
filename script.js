@@ -1,6 +1,6 @@
-const STORAGE_KEY = 'cdm2026-officiel-24juin-v1';
-const DATA_LABEL = 'Résultats au 24 juin • 48 matchs terminés';
-const DECLARED_PLAYED_MATCHES = 48;
+const STORAGE_KEY = 'cdm2026-officiel-derniere-maj-v1';
+const DATA_LABEL = 'Dernière MAJ • 60 matchs terminés • Groupes A à F complets';
+const DECLARED_PLAYED_MATCHES = 60;
 
 const FLAGS = {
   'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿','Canada':'🇨🇦','Bosnie':'🇧🇦','Qatar':'🇶🇦','Suisse':'🇨🇭','Brésil':'🇧🇷','Maroc':'🇲🇦','Haïti':'🇭🇹','Écosse':'🏴','États-Unis':'🇺🇸','Paraguay':'🇵🇾','Australie':'🇦🇺','Turquie':'🇹🇷','Allemagne':'🇩🇪','Curaçao':'🇨🇼','Côte d’Ivoire':'🇨🇮','Équateur':'🇪🇨','Pays-Bas':'🇳🇱','Japon':'🇯🇵','Suède':'🇸🇪','Tunisie':'🇹🇳','Belgique':'🇧🇪','Égypte':'🇪🇬','Iran':'🇮🇷','Nouvelle-Zélande':'🇳🇿','Espagne':'🇪🇸','Cap Vert':'🇨🇻','Arabie Saoudite':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Sénégal':'🇸🇳','Irak':'🇮🇶','Norvège':'🇳🇴','Argentine':'🇦🇷','Algérie':'🇩🇿','Autriche':'🇦🇹','Jordanie':'🇯🇴','Portugal':'🇵🇹','RD Congo':'🇨🇩','Ouzbékistan':'🇺🇿','Colombie':'🇨🇴','Angleterre':'🏴','Croatie':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦'
@@ -26,46 +26,69 @@ const OFFICIAL_RESULTS = [
   ['A','Corée du Sud',2,1,'Tchéquie'],
   ['A','Tchéquie',1,1,'Afrique du Sud'],
   ['A','Mexique',1,0,'Corée du Sud'],
+  ['A','Mexique',3,0,'Tchéquie'],
+  ['A','Afrique du Sud',1,0,'Corée du Sud'],
+
   ['B','Canada',1,1,'Bosnie'],
   ['B','Qatar',1,1,'Suisse'],
   ['B','Suisse',4,1,'Bosnie'],
   ['B','Canada',6,0,'Qatar'],
+  ['B','Suisse',2,1,'Canada'],
+  ['B','Bosnie',3,1,'Qatar'],
+
   ['C','Brésil',1,1,'Maroc'],
   ['C','Haïti',0,1,'Écosse'],
   ['C','Écosse',0,1,'Maroc'],
   ['C','Brésil',3,0,'Haïti'],
+  ['C','Brésil',3,0,'Écosse'],
+  ['C','Maroc',4,2,'Haïti'],
+
   ['D','États-Unis',4,1,'Paraguay'],
   ['D','Australie',2,0,'Turquie'],
   ['D','États-Unis',2,0,'Australie'],
   ['D','Turquie',0,1,'Paraguay'],
+  ['D','Turquie',3,2,'États-Unis'],
+  ['D','Paraguay',0,0,'Australie'],
+
   ['E','Allemagne',7,1,'Curaçao'],
   ['E','Côte d’Ivoire',1,0,'Équateur'],
   ['E','Allemagne',2,1,'Côte d’Ivoire'],
   ['E','Équateur',0,0,'Curaçao'],
+  ['E','Équateur',2,1,'Allemagne'],
+  ['E','Côte d’Ivoire',2,0,'Curaçao'],
+
   ['F','Pays-Bas',2,2,'Japon'],
   ['F','Suède',5,1,'Tunisie'],
   ['F','Pays-Bas',5,1,'Suède'],
   ['F','Tunisie',0,4,'Japon'],
+  ['F','Japon',1,1,'Suède'],
+  ['F','Pays-Bas',2,0,'Tunisie'],
+
   ['G','Belgique',1,1,'Égypte'],
   ['G','Iran',2,2,'Nouvelle-Zélande'],
   ['G','Belgique',0,0,'Iran'],
   ['G','Nouvelle-Zélande',1,3,'Égypte'],
+
   ['H','Espagne',0,0,'Cap Vert'],
   ['H','Arabie Saoudite',1,1,'Uruguay'],
   ['H','Espagne',4,0,'Arabie Saoudite'],
   ['H','Uruguay',2,2,'Cap Vert'],
+
   ['I','France',3,1,'Sénégal'],
   ['I','Irak',1,4,'Norvège'],
   ['I','France',3,0,'Irak'],
   ['I','Norvège',3,2,'Sénégal'],
+
   ['J','Argentine',3,0,'Algérie'],
   ['J','Autriche',3,1,'Jordanie'],
   ['J','Argentine',2,0,'Autriche'],
   ['J','Jordanie',1,2,'Algérie'],
+
   ['K','Portugal',1,1,'RD Congo'],
   ['K','Ouzbékistan',1,3,'Colombie'],
   ['K','Portugal',5,0,'Ouzbékistan'],
   ['K','Colombie',1,0,'RD Congo'],
+
   ['L','Angleterre',4,2,'Croatie'],
   ['L','Ghana',1,0,'Panama'],
   ['L','Angleterre',0,0,'Ghana'],
@@ -158,7 +181,7 @@ function updateDashboard(){
 
 function renderGroups(){
   const group = state.groups.find(g => g.name === activeGroup) || state.groups[0];
-  const groupTabs = `<div class="data-note"><strong>${DATA_LABEL}</strong><span>${exactPlayedTotal()} scores exacts intégrés dans les classements.</span></div><div class="group-switch">${state.groups.map(g=>`<button class="group-pill ${g.name===group.name?'active':''}" data-group-tab="${g.name}"><span>${g.name}</span><small>${groupPlayed(g)}/6</small></button>`).join('')}</div>`;
+  const groupTabs = `<div class="data-note"><strong>${DATA_LABEL}</strong><span>${exactPlayedTotal()} scores exacts intégrés dans les classements.</span></div><div class="group-switch">${state.groups.map(g=>`<button class="group-pill ${g.name===group.name?'active':''} ${groupPlayed(g)===6?'complete':''}" data-group-tab="${g.name}"><span>${g.name}</span><small>${groupPlayed(g)}/6</small></button>`).join('')}</div>`;
   const table = standings(group).map((s,i)=>`<tr class="${i<2?'qual-row':''}"><td>${teamHtml(s.team)}</td><td>${s.j}</td><td>${s.g}</td><td>${s.d}</td><td class="hide-mobile">${s.p}</td><td class="hide-mobile">${s.bp}</td><td class="hide-mobile">${s.bc}</td><td>${s.diff}</td><td><strong>${s.pts}</strong></td></tr>`).join('');
   const done = group.matches.every(m=>m.scoreA!==null && m.scoreB!==null);
   const matches = group.matches.map((m,i)=>`<div class="match"><div class="match-top"><span>Match ${i+1}</span><span>${m.scoreA!==null&&m.scoreB!==null?`${m.scoreA}-${m.scoreB}`:'À saisir'}</span></div><div class="match-compact"><div class="team-line">${teamHtml(m.teamA)}</div><div class="scores"><input class="score" type="number" min="0" value="${m.scoreA ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreA"><span class="dash">-</span><input class="score" type="number" min="0" value="${m.scoreB ?? ''}" data-group="${group.name}" data-match="${m.id}" data-field="scoreB"></div><div class="team-line right">${teamHtml(m.teamB)}</div></div></div>`).join('');
@@ -177,7 +200,7 @@ function renderQualified(){
   const firsts = rows.filter(r=>r.pos===1);
   const seconds = rows.filter(r=>r.pos===2);
   const q = [...firsts, ...seconds, ...bestThirds];
-  document.getElementById('qualifiedView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Qualifiés provisoires ${q.length}/32</h2><p class="subtitle">Classement calculé avec ${exactPlayedTotal()} scores exacts au 24 juin.</p><div class="list">${q.map((x,i)=>`<div class="item"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pos}e • ${x.pts} pts</small></div>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale':'Phase finale disponible quand les 72 matchs seront saisis'}</button></article>`;
+  document.getElementById('qualifiedView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Qualifiés provisoires ${q.length}/32</h2><p class="subtitle">Classement calculé avec ${exactPlayedTotal()} scores exacts. Les groupes A à F sont terminés.</p><div class="list">${q.map((x,i)=>`<div class="item"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pos}e • ${x.pts} pts</small></div>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale':'Phase finale disponible quand les 72 matchs seront saisis'}</button></article>`;
   const btn = document.getElementById('generateBtn'); if(btn) btn.addEventListener('click', generateKnockout);
 }
 
