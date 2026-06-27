@@ -1,5 +1,5 @@
-const CACHE_NAME = 'cdm2026-cache-v7-derniere-maj';
-const ASSETS = ['./','index.html','style.css?v=7','script.js?v=7','manifest.json?v=7','icon.svg?v=7'];
+const CACHE_NAME = 'cdm2026-cache-v8-groupes-ai';
+const ASSETS = ['./','index.html','style.css?v=8','script.js?v=8','manifest.json?v=8','icon.svg?v=8'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
