@@ -1,9 +1,9 @@
-const STORAGE_KEY = 'cdm2026-officiel-maj-ai-v1';
+const STORAGE_KEY = 'cdm2026-officiel-maj-ai-v2';
 const DATA_LABEL = 'Dernière MAJ • 66 matchs terminés • Groupes A à I complets';
 const DECLARED_PLAYED_MATCHES = 66;
 
 const FLAGS = {
-  'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿','Canada':'🇨🇦','Bosnie':'🇧🇦','Qatar':'🇶🇦','Suisse':'🇨🇭','Brésil':'🇧🇷','Maroc':'🇲🇦','Haïti':'🇭🇹','Écosse':'🏴','États-Unis':'🇺🇸','Paraguay':'🇵🇾','Australie':'🇦🇺','Turquie':'🇹🇷','Allemagne':'🇩🇪','Curaçao':'🇨🇼','Côte d’Ivoire':'🇨🇮','Équateur':'🇪🇨','Pays-Bas':'🇳🇱','Japon':'🇯🇵','Suède':'🇸🇪','Tunisie':'🇹🇳','Belgique':'🇧🇪','Égypte':'🇪🇬','Iran':'🇮🇷','Nouvelle-Zélande':'🇳🇿','Espagne':'🇪🇸','Cap Vert':'🇨🇻','Arabie Saoudite':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Sénégal':'🇸🇳','Irak':'🇮🇶','Norvège':'🇳🇴','Argentine':'🇦🇷','Algérie':'🇩🇿','Autriche':'🇦🇹','Jordanie':'🇯🇴','Portugal':'🇵🇹','RD Congo':'🇨🇩','Ouzbékistan':'🇺🇿','Colombie':'🇨🇴','Angleterre':'🏴','Croatie':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦'
+  'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿','Canada':'🇨🇦','Bosnie':'🇧🇦','Bosnie-Herzégovine':'🇧🇦','Qatar':'🇶🇦','Suisse':'🇨🇭','Brésil':'🇧🇷','Maroc':'🇲🇦','Haïti':'🇭🇹','Écosse':'🏴','États-Unis':'🇺🇸','Paraguay':'🇵🇾','Australie':'🇦🇺','Turquie':'🇹🇷','Allemagne':'🇩🇪','Curaçao':'🇨🇼','Côte d’Ivoire':'🇨🇮','Équateur':'🇪🇨','Pays-Bas':'🇳🇱','Japon':'🇯🇵','Suède':'🇸🇪','Tunisie':'🇹🇳','Belgique':'🇧🇪','Égypte':'🇪🇬','Iran':'🇮🇷','Nouvelle-Zélande':'🇳🇿','Espagne':'🇪🇸','Cap Vert':'🇨🇻','Arabie Saoudite':'🇸🇦','Uruguay':'🇺🇾','France':'🇫🇷','Sénégal':'🇸🇳','Irak':'🇮🇶','Norvège':'🇳🇴','Argentine':'🇦🇷','Algérie':'🇩🇿','Autriche':'🇦🇹','Jordanie':'🇯🇴','Portugal':'🇵🇹','RD Congo':'🇨🇩','Ouzbékistan':'🇺🇿','Colombie':'🇨🇴','Angleterre':'🏴','Croatie':'🇭🇷','Ghana':'🇬🇭','Panama':'🇵🇦','Autre 3e':'❔'
 };
 
 const GROUPS = [
@@ -101,6 +101,26 @@ const OFFICIAL_RESULTS = [
   ['L','Panama',0,1,'Croatie']
 ];
 
+const PROJECTED_R32 = [
+  {num:73,a:'Afrique du Sud',b:'Canada',status:'Confirmé'},
+  {num:76,a:'Brésil',b:'Japon',status:'Confirmé'},
+  {num:74,a:'Allemagne',b:'Paraguay',status:'Confirmé / projeté'},
+  {num:75,a:'Pays-Bas',b:'Maroc',status:'Confirmé'},
+  {num:78,a:'Côte d’Ivoire',b:'Norvège',status:'Confirmé'},
+  {num:77,a:'France',b:'Suède',status:'Projection actuelle'},
+  {num:79,a:'Mexique',b:'Équateur',status:'Projection actuelle'},
+  {num:80,a:'Angleterre',b:'Sénégal',status:'Projection très probable',senegal:true},
+  {num:82,a:'Belgique',b:'Corée du Sud',status:'Projection actuelle'},
+  {num:81,a:'États-Unis',b:'Bosnie',status:'Confirmé'},
+  {num:84,a:'Espagne',b:'Autriche / Algérie',status:'En attente groupe J'},
+  {num:85,a:'Suisse',b:'Iran',status:'Projection actuelle'},
+  {num:83,a:'Portugal / Colombie',b:'Ghana / Croatie',status:'En attente groupes K/L'},
+  {num:88,a:'Australie',b:'Égypte',status:'Confirmé'},
+  {num:86,a:'Argentine',b:'Cap Vert',status:'Confirmé'},
+  {num:87,a:'Colombie / Portugal',b:'Croatie / Autre 3e',status:'En attente groupes K/L'}
+];
+
+const WATCH_MATCHES = ['Algérie vs Autriche','Colombie vs Portugal','RD Congo vs Ouzbékistan','Panama vs Angleterre','Croatie vs Ghana'];
 const roundLabels = {R32:'Seizièmes de finale',R16:'Huitièmes de finale',QF:'Quarts de finale',SF:'Demi-finales',FINAL:'Finale',THIRD:'3e place'};
 let activeTab = 'groups';
 let activeGroup = 'I';
@@ -108,6 +128,9 @@ let state = loadState() || freshState();
 
 function flag(team){return FLAGS[team] || '🏳️'}
 function teamHtml(team){return `<span class="team"><span class="flag">${flag(team)}</span><span>${team}</span></span>`}
+function bracketTeamHtml(label){
+  return label.split(' / ').map(part => `<span class="bracket-team-option"><span class="flag">${flag(part)}</span><span>${part}</span></span>`).join('<span class="or">/</span>');
+}
 function n(v){if(v === '' || v === null || typeof v === 'undefined') return null; const x = parseInt(v,10); return Number.isFinite(x) && x >= 0 ? x : null;}
 
 function makeMatches(teams){
@@ -207,8 +230,16 @@ function renderQualified(){
   const seconds = rows.filter(r=>r.pos===2);
   const q = [...firsts, ...seconds, ...bestThirds];
   const thirdsTable = bestThirds.map((x,i)=>`<div class="item ${x.team==='Sénégal'?'senegal-item':''}"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pts} pts • diff ${x.diff}</small></div>`).join('');
-  document.getElementById('qualifiedView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Qualifiés provisoires ${q.length}/32</h2><p class="subtitle">Classement calculé avec ${exactPlayedTotal()} scores. Groupes A à I terminés.</p><h3 class="mini-title">Meilleurs troisièmes provisoires</h3><div class="list">${thirdsTable}</div><h3 class="mini-title">Tous les qualifiés provisoires</h3><div class="list">${q.map((x,i)=>`<div class="item ${x.team==='Sénégal'?'senegal-item':''}"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pos}e • ${x.pts} pts</small></div>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale':'Phase finale disponible quand les 72 matchs seront saisis'}</button></article>`;
+  document.getElementById('qualifiedView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Qualifiés provisoires ${q.length}/32</h2><p class="subtitle">Classement calculé avec ${exactPlayedTotal()} scores. Groupes A à I terminés.</p><h3 class="mini-title">Meilleurs troisièmes provisoires</h3><div class="list">${thirdsTable}</div><h3 class="mini-title">Tous les qualifiés provisoires</h3><div class="list">${q.map((x,i)=>`<div class="item ${x.team==='Sénégal'?'senegal-item':''}"><span>${i+1}. ${teamHtml(x.team)}</span><small>Groupe ${x.group} • ${x.pos}e • ${x.pts} pts</small></div>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale':'Phase finale complète quand les 72 matchs seront saisis'}</button></article>`;
   const btn = document.getElementById('generateBtn'); if(btn) btn.addEventListener('click', generateKnockout);
+}
+
+function renderProjectedBracket(){
+  const cards = PROJECTED_R32.map(m => {
+    const statusClass = m.status.includes('Confirmé') ? 'confirmed' : m.status.includes('attente') ? 'waiting' : 'projected';
+    return `<div class="ko-card ${m.senegal?'senegal-card':''}"><div class="ko-head"><span>Match ${m.num}</span><em class="status ${statusClass}">${m.status}</em></div><div class="ko-versus"><div class="ko-team">${bracketTeamHtml(m.a)}</div><strong>VS</strong><div class="ko-team right">${bracketTeamHtml(m.b)}</div></div>${m.senegal?'<div class="senegal-route">Sénégal qualifié • adversaire probable : Angleterre</div>':''}</div>`;
+  }).join('');
+  return `<article class="card wide-card bracket-card"><h2 class="section-title">Tableau provisoire des 16es</h2><p class="subtitle">Le tableau n’est pas encore totalement figé : les groupes J, K et L doivent encore finir. Cette vue reprend l’état actuel fourni, avec projections et affiches confirmées.</p><div class="bracket-hero"><div><span class="trophy-small">🏆</span><strong>Round of 32</strong><small>Phase finale provisoire</small></div><div class="bracket-count">16 affiches</div></div><div class="projected-grid">${cards}</div><h3 class="mini-title">À surveiller</h3><div class="watch-list">${WATCH_MATCHES.map(x=>`<span>${x}</span>`).join('')}</div><button class="btn primary" style="width:100%;margin-top:14px" id="generateBtn" ${allGroupsDone()?'':'disabled'}>${allGroupsDone()?'Générer la phase finale complète':'Tableau complet après les 72 matchs'}</button></article>`;
 }
 
 function generateKnockout(){
@@ -239,7 +270,11 @@ function advance(){
   state.currentRound = nr; save(); renderKnockout();
 }
 function renderKnockout(){
-  if(!state.currentRound){document.getElementById('knockoutView').innerHTML = `<article class="card wide-card"><h2 class="section-title">Phase finale</h2><p class="subtitle">La phase finale sera générée quand les 72 matchs de groupes seront saisis.</p></article>`; return;}
+  if(!state.currentRound){
+    document.getElementById('knockoutView').innerHTML = renderProjectedBracket();
+    const btn = document.getElementById('generateBtn'); if(btn) btn.addEventListener('click', generateKnockout);
+    return;
+  }
   const cur = currentMatches();
   document.getElementById('knockoutView').innerHTML = `<article class="card wide-card"><h2 class="section-title">${roundLabels[state.currentRound]}</h2><div class="matches">${cur.map((m,i)=>{
     const w = winner(m); const draw = m.scoreA!==null && m.scoreB!==null && m.scoreA===m.scoreB; const needPens = draw && m.etA!==null && m.etB!==null && m.etA===m.etB;
