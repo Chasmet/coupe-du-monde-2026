@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cdm2026-cache-v13-phase-mobile';
+const CACHE_NAME = 'cdm2026-cache-v14-bracket';
 const ASSETS = ['./','index.html','style.css?v=13','bracket-pro.css?v=13','script.js?v=13','bracket-pro.js?v=13','manifest.json?v=13','icon.svg?v=13'];
 
 self.addEventListener('install', event => {
