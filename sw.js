@@ -1,5 +1,5 @@
-const CACHE_NAME = 'cdm2026-cache-v9-tableau-provisoire';
-const ASSETS = ['./','index.html','style.css?v=9','script.js?v=9','manifest.json?v=9','icon.svg?v=9'];
+const CACHE_NAME = 'cdm2026-cache-v10-tableau-premium';
+const ASSETS = ['./','index.html','style.css?v=10','bracket-pro.css?v=10','script.js?v=10','bracket-pro.js?v=10','manifest.json?v=10','icon.svg?v=10'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
