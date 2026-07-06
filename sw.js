@@ -1,4 +1,4 @@
-const CACHE_NAME='cdm2026-cache-v21-arbre-scores';
+const CACHE_NAME='cdm2026-cache-v22-8es-quarts';
 self.addEventListener('install',event=>self.skipWaiting());
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{if(event.request.method==='GET')event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)))});
